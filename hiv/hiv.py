@@ -12,52 +12,58 @@ import matplotlib as plt
 
 # Load data
 # Data source: http://apps.who.int/gho/data/node.main.HIVINCIDENCE?lang=en
-hiv_df = pd.read_csv('hiv.csv')
+new_infections_df = pd.read_csv('data/new_infections.csv')
 
-# Subsetting data with groupby method
-country_col = hiv_df['Country']
-regions = hiv_df.groupby('WHO region')
+# Data source: http://apps.who.int/gho/data/view.main.23300
+therapy_coverage_df = pd.read_csv('data/therapy_coverage.csv')
+
+# Subset data based on column values
+country_col = new_infections_df['Country']
+regions = new_infections_df.groupby('WHO region')
 regions_dict = regions.groups
 print(regions.groups.keys())
 africa_group = regions.get_group('Africa')
-hiv_df['WHO region'] == 'Europe'
-europe_group = hiv_df[hiv_df['WHO region'] == 'Europe']
+new_infections_df['WHO region'] == 'Europe'
+europe_group = new_infections_df[new_infections_df['WHO region'] == 'Europe']
+
+all_hiv_df = therapy_coverage_df[therapy_coverage_df['Indicator'] == 'Estimated number of people (all ages) living with HIV']
+num_therapy_df = therapy_coverage_df[therapy_coverage_df['Indicator'] == 'Reported number of people receiving antiretroviral therapy']
 
 # Write df to json
-hiv_json = hiv_df.to_json('hiv.json', orient='records')
+hiv_json = new_infections_df.to_json('hiv.json', orient='records')
 
-# Creating a panel (i.e. a dictionary of dataframes)
+# Create panel (i.e. a dictionary of dataframes)
 # NOTE: Panel is deprecated
 #pn = pd.Panel({'item1':africa_group, 'item2':europe_group})
 #pn['item1']
 
-# Inspecting the data
-hiv_df.info()
-hiv_df.describe()
-hiv_df.columns
-hiv_df['Year'].value_counts()
-hiv_df['Display Value'].value_counts()
-hiv_df['WHO region'].unique()
+# Inspect data
+new_infections_df.info()
+new_infections_df.describe()
+new_infections_df.columns
+new_infections_df['Year'].value_counts()
+new_infections_df['Display Value'].value_counts()
+new_infections_df['WHO region'].unique()
 
-# Setting the df's index
-hiv_df = hiv_df.set_index('Country')
-hiv_df.head(2)
-hiv_df.reset_index(inplace = True)
-hiv_df.head(2)
+# Set df's index
+new_infections_df = new_infections_df.set_index('Country')
+new_infections_df.head(2)
+new_infections_df.reset_index(inplace = True)
+new_infections_df.head(2)
 
-# Creating boolean masks based on multiple conditions
-mask = (hiv_df['Indicator'] == 'Number of new HIV infections') & (hiv_df['Numeric'] > 10000)
-high_infections = hiv_df[mask]
+# Create boolean masks based on multiple conditions
+mask = (new_infections_df['Indicator'] == 'Number of new HIV infections') & (new_infections_df['Numeric'] > 10000)
+high_infections = new_infections_df[mask]
 high_infections.count()
 high_infections.describe()
 high_infections['WHO region'].describe()
 high_infections.info()
 
-# String methods
+# Use string methods
 high_infections[high_infections.Country.str.contains('Island')]['Country']
 
 # Find nulls
-nulls = hiv_df[hiv_df.isnull()]
+nulls = new_infections_df[new_infections_df.isnull()]
 nulls.count()
 
 # Find duplicates
@@ -80,4 +86,4 @@ high_infections.loc[high_infections.Country=='Ethiopia']
 high_infections.loc[high_infections.Country=='Brazil', 'Comments'] = 'Brazil is awesome'
 
 # Subset top ten countries with most new infections
-high_infections.sort_values('Numeric', ascending=False).iloc[:10][['Country', 'WHO region', 'Numeric']]
+top_infections = high_infections.sort_values('Numeric', ascending=False).iloc[:10][['Country', 'WHO region', 'Numeric']]
